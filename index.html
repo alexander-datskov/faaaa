@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liquid Glass UI - Multi-Level</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: white;
+    overflow: hidden;
+}
+
+body {
+    background: linear-gradient(135deg, #000000 0%, #0a0a0a 25%, #050505 50%, #0f0f0f 75%, #000000 100%);
+    background-size: 400% 400%;
+    animation: gradientBackground 15s ease infinite;
+    position: relative;
+}
+
+@keyframes gradientBackground {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Enhanced ambient shadows floating effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 30%, rgba(100, 100, 100, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 70%, rgba(80, 80, 80, 0.12) 0%, transparent 50%);
+    animation: ambientMove 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes ambientMove {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(30px, 30px) rotate(180deg); }
+}
+
+.bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 1s ease;
+    filter: brightness(0.4) contrast(1.2);
+}
+
+.bg-overlay.loaded {
+    opacity: 1;
+}
+
+.wrap {
+    padding: 40px;
+    max-width: 1200px;
+    margin: auto;
+    position: relative;
+    z-index: 1;
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.wrap::-webkit-scrollbar {
+    width: 10px;
+}
+
+.wrap::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+.wrap::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(120, 120, 120, 0.4), rgba(80, 80, 80, 0.4));
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(120, 120, 120, 0.5);
+}
+
+.wrap::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(140, 140, 140, 0.5), rgba(100, 100, 100, 0.5));
+}
+
+h1 {
+    text-align: center;
+    font-size: 56px;
+    margin-bottom: 40px;
+    background: linear-gradient(135deg, #707070 0%, #909090 25%, #b0b0b0 50%, #808080 75%, #a0a0a0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 900;
+    letter-spacing: 4px;
+    animation: gradientShift 8s ease infinite;
+    background-size: 200% 200%;
+    filter: drop-shadow(0 4px 20px rgba(200, 200, 200, 0.3)) 
+            drop-shadow(0 8px 40px rgba(150, 150, 150, 0.2))
+            drop-shadow(0 0 60px rgba(180, 180, 180, 0.15));
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 28px;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-btn, .category-btn {
+    background: linear-gradient(145deg, rgba(40, 40, 40, 0.4), rgba(20, 20, 20, 0.6));
+    border: 1px solid rgba(100, 100, 100, 0.3);
+    border-radius: 24px;
+    padding: 32px;
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.8),
+        0 6px 20px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+
+.section-btn::before, .category-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transition: left 0.6s;
+}
+
+.section-btn::after, .category-btn::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 24px;
+    padding: 2px;
+    background: linear-gradient(145deg, rgba(120, 120, 120, 0.3), transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.section-btn:hover::before, .category-btn:hover::before {
+    left: 100%;
+}
+
+.section-btn:hover::after, .category-btn:hover::after {
+    opacity: 1;
+}
+
+.section-btn:hover, .category-btn:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.9),
+        0 12px 35px rgba(100, 100, 100, 0.4),
+        0 0 0 1px rgba(150, 150, 150, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -2px 10px rgba(0, 0, 0, 0.5);
+    border-color: rgba(140, 140, 140, 0.5);
+    background: linear-gradient(145deg, rgba(50, 50, 50, 0.5), rgba(30, 30, 30, 0.7));
+}
+
+.section-btn:active, .category-btn:active {
+    transform: translateY(-6px) scale(0.98);
+}
+
+.section-btn img, .category-btn img {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    object-fit: cover;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7)) 
+            drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+.section-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    filter: grayscale(0.8);
+}
+
+.section-btn.disabled:hover {
+    transform: none;
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.8),
+        0 6px 20px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.card {
+    background: linear-gradient(145deg, rgba(35, 35, 35, 0.5), rgba(15, 15, 15, 0.7));
+    border: 1px solid rgba(90, 90, 90, 0.4);
+    border-radius: 24px;
+    padding: 28px;
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.85),
+        0 6px 20px rgba(0, 0, 0, 0.65),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: cardFadeIn 0.5s ease-out backwards;
+    position: relative;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 24px;
+    padding: 2px;
+    background: linear-gradient(145deg, rgba(100, 100, 100, 0.3), transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.card:nth-child(1) { animation-delay: 0.1s; }
+.card:nth-child(2) { animation-delay: 0.2s; }
+.card:nth-child(3) { animation-delay: 0.3s; }
+.card:nth-child(4) { animation-delay: 0.4s; }
+.card:nth-child(5) { animation-delay: 0.5s; }
+
+.card:hover::before {
+    opacity: 1;
+}
+
+.card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 
+        0 24px 70px rgba(0, 0, 0, 0.95),
+        0 12px 35px rgba(100, 100, 100, 0.35),
+        0 0 0 1px rgba(130, 130, 130, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -2px 12px rgba(0, 0, 0, 0.6);
+    border-color: rgba(120, 120, 120, 0.6);
+    background: linear-gradient(145deg, rgba(45, 45, 45, 0.6), rgba(25, 25, 25, 0.8));
+}
+
+.name {
+    font-weight: 700;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.url {
+    font-size: 13px;
+    color: rgba(200, 200, 200, 0.7);
+    word-break: break-all;
+    margin-bottom: 12px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.icon-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    object-fit: cover;
+    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.8)) 
+            drop-shadow(0 1px 4px rgba(0, 0, 0, 0.6));
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn {
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    color: white;
+    background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.8),
+        0 3px 10px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(80, 80, 80, 0.3);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 16px;
+    padding: 1px;
+    background: linear-gradient(145deg, rgba(100, 100, 100, 0.4), transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover::after {
+    opacity: 1;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.9),
+        0 5px 15px rgba(100, 100, 100, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -2px 8px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(145deg, #3a3a3a 0%, #2a2a2a 100%);
+    border-color: rgba(100, 100, 100, 0.5);
+}
+
+.btn:active {
+    transform: translateY(-1px);
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.97);
+    backdrop-filter: blur(20px);
+    display: none;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.overlay iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.closeBtn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(145deg, rgba(200, 30, 60, 0.9), rgba(180, 20, 50, 0.95));
+    padding: 14px 24px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 100, 120, 0.4);
+    cursor: pointer;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    z-index: 10000;
+    transition: all 0.3s ease;
+    box-shadow: 
+        0 6px 25px rgba(200, 30, 60, 0.6),
+        0 3px 12px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+.closeBtn:hover {
+    background: linear-gradient(145deg, rgba(220, 40, 70, 1), rgba(200, 30, 60, 1));
+    transform: scale(1.05);
+    box-shadow: 
+        0 8px 30px rgba(220, 40, 70, 0.7),
+        0 4px 15px rgba(0, 0, 0, 0.9),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.backBtn {
+    margin-bottom: 24px;
+    padding: 16px 28px;
+    border-radius: 16px;
+    border: 1px solid rgba(100, 100, 100, 0.3);
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+    color: white;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.8),
+        0 3px 10px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.backBtn:hover {
+    transform: translateX(-6px);
+    box-shadow: 
+        0 8px 30px rgba(0, 0, 0, 0.9),
+        0 4px 15px rgba(100, 100, 100, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    background: linear-gradient(145deg, #3a3a3a 0%, #2a2a2a 100%);
+    border-color: rgba(120, 120, 120, 0.5);
+}
+
+.backBtn:active {
+    transform: translateX(-3px);
+}
+
+.page-enter {
+    animation: pageEnter 0.5s ease-out;
+}
+
+@keyframes pageEnter {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 36px;
+    }
+    
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .wrap {
+        padding: 20px;
+    }
+}
+</style>
+</head>
+<body>
+<div class="bg-overlay" id="bgOverlay"></div>
+
+<div class="wrap" id="mainPage">
+    <h1>LIQUID GLASS UI</h1>
+    <div class="grid" id="sectionGrid"></div>
+</div>
+
+<div class="wrap" id="categoryPage" style="display:none;">
+    <button class="backBtn" id="backToSection">← Back to Sections</button>
+    <h1 id="categoryTitle">Category Name</h1>
+    <div class="grid" id="categoryGrid"></div>
+</div>
+
+<div class="wrap" id="linksPage" style="display:none;">
+    <button class="backBtn" id="backToCategory">← Back to Categories</button>
+    <h1 id="linksTitle">Links</h1>
+    <div class="grid" id="linkGrid"></div>
+</div>
+
+<div class="overlay" id="overlay">
+    <button class="closeBtn" id="closeBtn">✕ Close</button>
+    <iframe id="viewer"></iframe>
+</div>
+
+<script>
+var sections = [
+    {
+        "name": "Proxies",
+        "icon": "https://lh3.googleusercontent.com/rd-d/ALs6j_FHLd2tRXuZ1scbp7T3qKMMw6RhZQvJfw9H-H0qMZ8mcK8s5leebTpWqcJcqV4rzhmrO0dfyOWvsjmRVHpuxGq5nuyuEosCiUfiByCAVzZKVDQHt0efydPGjYEqiC8z3MBwbVbVP7wh3lsyn-2e-3t4FLD59ab8MPPJlQLyquPDXlK_MBeSrTHd77jKW1O8uzLk87r_ow2v2ZXQ1GKfzU86bVooH4Sn4FWLdH_8_uEjhNcTN00BIQ8usYW0phgSymw1dFEkHweLQkZKZd2OlqMh7yqHfhvzcaqBcHpg_wMGmSAtR7TGZDQuY-s8a8j16BaPKek892CEn_1xo9qdJeLBKZDTNJCN5MzAwcyH-YjlFZqNUqLQCfbgIwEHi8x5_RGcG1YhsCrsIiy37x2F1Ecm5BrW7z1V6adlV960nFHRG-EPDQat42-1QSfX3FMzmaDWNGdEETyc0FVGV8SKOUKfmOGOsSyhA_1NgNC41NmABggMoxwF4ZBvxQSd1YZQdAwxJE1e4PocM4Q8cAWsoTLc8eIC7W_d5FNloYA1mlDXqIHY4N1dJ9CQuK5Pw-0HJHdVluYSerbnuRRs8TI32IXrneYuroRWXpHVKAbmG9Rh0ZQf_2QSFpwiRK8BX1vh6xZvHHR_Vg56n8BcSDS41f4LROm3D4zlF-hmBRwd44uXoIigVcn4kLYoC0Y-sLnyfUiMsCSbQRolR17IJMJdHTLSLSTkcTw7taBf6A0y0LUQzbO7fkRIUXbA8763kTuHUS982JNEjNJ1o3QEXR9KGVM-RcWQ_D6cxId4ULaM-t40iTCk77ciM7YwxgmVosvxY-UHdL-_vwTsS7FVg4whaPnS3urslHNMGsaYuCveS4VvGZTHWp_VDxNXLTkP6kG0ECMowb4o5ZaIE07lareE7YedSgCPM9z0Mi3tAKvb4J96zl9qg1LBcL8ixH3pd5Fe4XPI9F6dBBnkd2M26fDbhTIAaISSRjUqYtxDGYNB5HjsqPA8w600Dqlzfp_jyYhiedgMtli2RaRrbMHiK0iREnPaZBiaQLgV9nhsy3Tu=w3840-h2097?auditContext=forDisplay",
+        "enabled": true,
+        "categories": [
+            {
+                "name": "Space",
+                "icon": "https://dev.desmos.live.cdn.cloudflare.net/assets/logo.webp",
+                "links": [
+                    {
+                        "name": "Space Link #1",
+                        "link": "https://dev.desmos.live.cdn.cloudflare.net/",
+                        "iconURL": "https://dev.desmos.live.cdn.cloudflare.net/assets/logo.webp"
+                    },
+                    {
+                        "name": "Space Link #2",
+                        "link": "https://buy.gpu74.ru/",
+                        "iconURL": "https://buy.gpu74.ru/assets/logo.webp"
+                    },
+                    {
+                        "name": "Space Link #3",
+                        "link": "https://member.electricpiano.xyz.cdn.cloudflare.net/",
+                        "iconURL": "https://member.electricpiano.xyz.cdn.cloudflare.net/assets/logo.webp"
+                    },
+                    {
+                        "name": "Space Link #4",
+                        "link": "https://use.doriswel.com/",
+                        "iconURL": "https://use.doriswel.com/assets/logo.webp"
+                    },
+                    {
+                        "name": "Space Link #5",
+                        "link": "https://outerspace.tomashirsch.cl/",
+                        "iconURL": "https://outerspace.tomashirsch.cl/assets/logo.webp"
+                    }
+                ]
+            },
+            {
+                "name": "DayDreamX",
+                "icon": "https://lh3.googleusercontent.com/rd-d/ALs6j_E3zeoTC4aKM2L96AnuH8eP_uM9W_xfPzNzz4DJ25OHuhoNeoivgUQswQc6kmfr99MybENOSelFlnj-dVjVNupavHR5Qj6tW4Lb7I0VdUrs39O8T4-it0K96sYNxwsGtStUiCddwzQu5rOqbWMCvVQ3oibfGxpx6Cok47wGotk9d4Lih87NAEgsRzQf-WTPNFtGew2TidfOeskpfPoUd9K_UDE8l1xIHTGbwZ0jx9u28ROJq2Ld9-KLBcY4nG5Z2uDrm1McsnPWoZMdFsnYjq0zKEwWR0flsM5nlfrh_0wmprU88fT8ukTxOUmUvAZq2ZJs72L1wwPNwl2PWoxlXAIK7GkRLtWbP1Jwjjt8xZTK3_Xz865Vmmv-lsW-0dtzlVrW5NPgejHUiHsdaPwvCWQtnTsINwzbZH9esSEt2B-Z94PhhdK1hm0sfEenq-Btm2cK3m4V3BxekLnvh8GIYeiGJHDlR885Npd24JI6STV7L0zbC-S8QYiXMy4bBxeHHn1awpZfwGyDxH6jUW24SYoKS2GX4fvxcHPUNK2OxGf9h4hy5rM-Qbtr5CSu1DVFvmdPg2XIpPgRhsN0XJ7wsVDI3yknV_uorrvBcUoJISGHs326-ewZNAnJWDw97KGKInDf78mEJTCzCWp1sbHn38a0ifZjYxQhbkgaKIUcYID_eS4iplrkgNCodXwE7b63_yQxhk46ftCzPFEWuV30vc7m3kSAMhLpPtvm8FXeXAEgGStWwFHo-pIMlMlYqABEqLY_NBgUWy2R-oHGw6sUBaG_HPZYXWtd94FzA0pTB4PHnIvWIw3ZOOQnoQXhiR6cAecwTkj2aJVmOhCpHwDLwBMsl7KD3Mwc5niTkxGeyIkqkNU38WinxDs6EKjNFovtRfh6nPd253t2mJOFJMmp7XA23lQsKflIunjrNl4JW_J5YV5ASG3Zi8m1Xvf-yf-Qeq6ngEpiLGPVjNtK9TjEZvalbspP5yTACItadW9K2tdjdXzhiP03XH1ADQlPmIY1w9qdReSmrcHbNRo4Zh4nWV78OxR82G_HWlWpYYzlwQ=w3840-h2097?auditContext=forDisplay",
+                "links": [
+                    {
+                        "name": "DayDreamX Link #1",
+                        "link": "https://dreaming.is-not.cool.cdn.cloudflare.net/",
+                        "iconURL": "https://lh3.googleusercontent.com/rd-d/ALs6j_E3zeoTC4aKM2L96AnuH8eP_uM9W_xfPzNzz4DJ25OHuhoNeoivgUQswQc6kmfr99MybENOSelFlnj-dVjVNupavHR5Qj6tW4Lb7I0VdUrs39O8T4-it0K96sYNxwsGtStUiCddwzQu5rOqbWMCvVQ3oibfGxpx6Cok47wGotk9d4Lih87NAEgsRzQf-WTPNFtGew2TidfOeskpfPoUd9K_UDE8l1xIHTGbwZ0jx9u28ROJq2Ld9-KLBcY4nG5Z2uDrm1McsnPWoZMdFsnYjq0zKEwWR0flsM5nlfrh_0wmprU88fT8ukTxOUmUvAZq2ZJs72L1wwPNwl2PWoxlXAIK7GkRLtWbP1Jwjjt8xZTK3_Xz865Vmmv-lsW-0dtzlVrW5NPgejHUiHsdaPwvCWQtnTsINwzbZH9esSEt2B-Z94PhhdK1hm0sfEenq-Btm2cK3m4V3BxekLnvh8GIYeiGJHDlR885Npd24JI6STV7L0zbC-S8QYiXMy4bBxeHHn1awpZfwGyDxH6jUW24SYoKS2GX4fvxcHPUNK2OxGf9h4hy5rM-Qbtr5CSu1DVFvmdPg2XIpPgRhsN0XJ7wsVDI3yknV_uorrvBcUoJISGHs326-ewZNAnJWDw97KGKInDf78mEJTCzCWp1sbHn38a0ifZjYxQhbkgaKIUcYID_eS4iplrkgNCodXwE7b63_yQxhk46ftCzPFEWuV30vc7m3kSAMhLpPtvm8FXeXAEgGStWwFHo-pIMlMlYqABEqLY_NBgUWy2R-oHGw6sUBaG_HPZYXWtd94FzA0pTB4PHnIvWIw3ZOOQnoQXhiR6cAecwTkj2aJVmOhCpHwDLwBMsl7KD3Mwc5niTkxGeyIkqkNU38WinxDs6EKjNFovtRfh6nPd253t2mJOFJMmp7XA23lQsKflIunjrNl4JW_J5YV5ASG3Zi8m1Xvf-yf-Qeq6ngEpiLGPVjNtK9TjEZvalbspP5yTACItadW9K2tdjdXzhiP03XH1ADQlPmIY1w9qdReSmrcHbNRo4Zh4nWV78OxR82G_HWlWpYYzlwQ=w3840-h2097?auditContext=forDisplay",
+                        "corsEnabled": true
+                    },
+                    {
+                        "name": "DayDreamX Link #2",
+                        "link": "https://prices.gpu74.ru/",
+                        "iconURL": "https://lh3.googleusercontent.com/rd-d/ALs6j_E3zeoTC4aKM2L96AnuH8eP_uM9W_xfPzNzz4DJ25OHuhoNeoivgUQswQc6kmfr99MybENOSelFlnj-dVjVNupavHR5Qj6tW4Lb7I0VdUrs39O8T4-it0K96sYNxwsGtStUiCddwzQu5rOqbWMCvVQ3oibfGxpx6Cok47wGotk9d4Lih87NAEgsRzQf-WTPNFtGew2TidfOeskpfPoUd9K_UDE8l1xIHTGbwZ0jx9u28ROJq2Ld9-KLBcY4nG5Z2uDrm1McsnPWoZMdFsnYjq0zKEwWR0flsM5nlfrh_0wmprU88fT8ukTxOUmUvAZq2ZJs72L1wwPNwl2PWoxlXAIK7GkRLtWbP1Jwjjt8xZTK3_Xz865Vmmv-lsW-0dtzlVrW5NPgejHUiHsdaPwvCWQtnTsINwzbZH9esSEt2B-Z94PhhdK1hm0sfEenq-Btm2cK3m4V3BxekLnvh8GIYeiGJHDlR885Npd24JI6STV7L0zbC-S8QYiXMy4bBxeHHn1awpZfwGyDxH6jUW24SYoKS2GX4fvxcHPUNK2OxGf9h4hy5rM-Qbtr5CSu1DVFvmdPg2XIpPgRhsN0XJ7wsVDI3yknV_uorrvBcUoJISGHs326-ewZNAnJWDw97KGKInDf78mEJTCzCWp1sbHn38a0ifZjYxQhbkgaKIUcYID_eS4iplrkgNCodXwE7b63_yQxhk46ftCzPFEWuV30vc7m3kSAMhLpPtvm8FXeXAEgGStWwFHo-pIMlMlYqABEqLY_NBgUWy2R-oHGw6sUBaG_HPZYXWtd94FzA0pTB4PHnIvWIw3ZOOQnoQXhiR6cAecwTkj2aJVmOhCpHwDLwBMsl7KD3Mwc5niTkxGeyIkqkNU38WinxDs6EKjNFovtRfh6nPd253t2mJOFJMmp7XA23lQsKflIunjrNl4JW_J5YV5ASG3Zi8m1Xvf-yf-Qeq6ngEpiLGPVjNtK9TjEZvalbspP5yTACItadW9K2tdjdXzhiP03XH1ADQlPmIY1w9qdReSmrcHbNRo4Zh4nWV78OxR82G_HWlWpYYzlwQ=w3840-h2097?auditContext=forDisplay",
+                        "corsEnabled": true
+                    },
+                    {
+                        "name": "DayDreamX Link #3",
+                        "link": "https://daydreaming.boiso.ar/",
+                        "iconURL": "https://lh3.googleusercontent.com/rd-d/ALs6j_E3zeoTC4aKM2L96AnuH8eP_uM9W_xfPzNzz4DJ25OHuhoNeoivgUQswQc6kmfr99MybENOSelFlnj-dVjVNupavHR5Qj6tW4Lb7I0VdUrs39O8T4-it0K96sYNxwsGtStUiCddwzQu5rOqbWMCvVQ3oibfGxpx6Cok47wGotk9d4Lih87NAEgsRzQf-WTPNFtGew2TidfOeskpfPoUd9K_UDE8l1xIHTGbwZ0jx9u28ROJq2Ld9-KLBcY4nG5Z2uDrm1McsnPWoZMdFsnYjq0zKEwWR0flsM5nlfrh_0wmprU88fT8ukTxOUmUvAZq2ZJs72L1wwPNwl2PWoxlXAIK7GkRLtWbP1Jwjjt8xZTK3_Xz865Vmmv-lsW-0dtzlVrW5NPgejHUiHsdaPwvCWQtnTsINwzbZH9esSEt2B-Z94PhhdK1hm0sfEenq-Btm2cK3m4V3BxekLnvh8GIYeiGJHDlR885Npd24JI6STV7L0zbC-S8QYiXMy4bBxeHHn1awpZfwGyDxH6jUW24SYoKS2GX4fvxcHPUNK2OxGf9h4hy5rM-Qbtr5CSu1DVFvmdPg2XIpPgRhsN0XJ7wsVDI3yknV_uorrvBcUoJISGHs326-ewZNAnJWDw97KGKInDf78mEJTCzCWp1sbHn38a0ifZjYxQhbkgaKIUcYID_eS4iplrkgNCodXwE7b63_yQxhk46ftCzPFEWuV30vc7m3kSAMhLpPtvm8FXeXAEgGStWwFHo-pIMlMlYqABEqLY_NBgUWy2R-oHGw6sUBaG_HPZYXWtd94FzA0pTB4PHnIvWIw3ZOOQnoQXhiR6cAecwTkj2aJVmOhCpHwDLwBMsl7KD3Mwc5niTkxGeyIkqkNU38WinxDs6EKjNFovtRfh6nPd253t2mJOFJMmp7XA23lQsKflIunjrNl4JW_J5YV5ASG3Zi8m1Xvf-yf-Qeq6ngEpiLGPVjNtK9TjEZvalbspP5yTACItadW9K2tdjdXzhiP03XH1ADQlPmIY1w9qdReSmrcHbNRo4Zh4nWV78OxR82G_HWlWpYYzlwQ=w3840-h2097?auditContext=forDisplay",
+                        "corsEnabled": true
+                    },
+                    {
+                        "name": "DayDreamX Link #4",
+                        "link": "https://family.doriswel.com/",
+                        "iconURL": "https://lh3.googleusercontent.com/rd-d/ALs6j_E3zeoTC4aKM2L96AnuH8eP_uM9W_xfPzNzz4DJ25OHuhoNeoivgUQswQc6kmfr99MybENOSelFlnj-dVjVNupavHR5Qj6tW4Lb7I0VdUrs39O8T4-it0K96sYNxwsGtStUiCddwzQu5rOqbWMCvVQ3oibfGxpx6Cok47wGotk9d4Lih87NAEgsRzQf-WTPNFtGew2TidfOeskpfPoUd9K_UDE8l1xIHTGbwZ0jx9u28ROJq2Ld9-KLBcY4nG5Z2uDrm1McsnPWoZMdFsnYjq0zKEwWR0flsM5nlfrh_0wmprU88fT8ukTxOUmUvAZq2ZJs72L1wwPNwl2PWoxlXAIK7GkRLtWbP1Jwjjt8xZTK3_Xz865Vmmv-lsW-0dtzlVrW5NPgejHUiHsdaPwvCWQtnTsINwzbZH9esSEt2B-Z94PhhdK1hm0sfEenq-Btm2cK3m4V3BxekLnvh8GIYeiGJHDlR885Npd24JI6STV7L0zbC-S8QYiXMy4bBxeHHn1awpZfwGyDxH6jUW24SYoKS2GX4fvxcHPUNK2OxGf9h4hy5rM-Qbtr5CSu1DVFvmdPg2XIpPgRhsN0XJ7wsVDI3yknV_uorrvBcUoJISGHs326-ewZNAnJWDw97KGKInDf78mEJTCzCWp1sbHn38a0ifZjYxQhbkgaKIUcYID_eS4iplrkgNCodXwE7b63_yQxhk46ftCzPFEWuV30vc7m3kSAMhLpPtvm8FXeXAEgGStWwFHo-pIMlMlYqABEqLY_NBgUWy2R-oHGw6sUBaG_HPZYXWtd94FzA0pTB4PHnIvWIw3ZOOQnoQXhiR6cAecwTkj2aJVmOhCpHwDLwBMsl7KD3Mwc5niTkxGeyIkqkNU38WinxDs6EKjNFovtRfh6nPd253t2mJOFJMmp7XA23lQsKflIunjrNl4JW_J5YV5ASG3Zi8m1Xvf-yf-Qeq6ngEpiLGPVjNtK9TjEZvalbspP5yTACItadW9K2tdjdXzhiP03XH1ADQlPmIY1w9qdReSmrcHbNRo4Zh4nWV78OxR82G_HWlWpYYzlwQ=w3840-h2097?auditContext=forDisplay",
+                        "corsEnabled": true
+                    },
+                    {
+                        "name": "DayDreamX Link #5",
+                        "link": "https://daydreaming.arrowbases.com/",
+                        "iconURL": "https://lh3.googleusercontent.com/rd-d/ALs6j_E3zeoTC4aKM2L96AnuH8eP_uM9W_xfPzNzz4DJ25OHuhoNeoivgUQswQc6kmfr99MybENOSelFlnj-dVjVNupavHR5Qj6tW4Lb7I0VdUrs39O8T4-it0K96sYNxwsGtStUiCddwzQu5rOqbWMCvVQ3oibfGxpx6Cok47wGotk9d4Lih87NAEgsRzQf-WTPNFtGew2TidfOeskpfPoUd9K_UDE8l1xIHTGbwZ0jx9u28ROJq2Ld9-KLBcY4nG5Z2uDrm1McsnPWoZMdFsnYjq0zKEwWR0flsM5nlfrh_0wmprU88fT8ukTxOUmUvAZq2ZJs72L1wwPNwl2PWoxlXAIK7GkRLtWbP1Jwjjt8xZTK3_Xz865Vmmv-lsW-0dtzlVrW5NPgejHUiHsdaPwvCWQtnTsINwzbZH9esSEt2B-Z94PhhdK1hm0sfEenq-Btm2cK3m4V3BxekLnvh8GIYeiGJHDlR885Npd24JI6STV7L0zbC-S8QYiXMy4bBxeHHn1awpZfwGyDxH6jUW24SYoKS2GX4fvxcHPUNK2OxGf9h4hy5rM-Qbtr5CSu1DVFvmdPg2XIpPgRhsN0XJ7wsVDI3yknV_uorrvBcUoJISGHs326-ewZNAnJWDw97KGKInDf78mEJTCzCWp1sbHn38a0ifZjYxQhbkgaKIUcYID_eS4iplrkgNCodXwE7b63_yQxhk46ftCzPFEWuV30vc7m3kSAMhLpPtvm8FXeXAEgGStWwFHo-pIMlMlYqABEqLY_NBgUWy2R-oHGw6sUBaG_HPZYXWtd94FzA0pTB4PHnIvWIw3ZOOQnoQXhiR6cAecwTkj2aJVmOhCpHwDLwBMsl7KD3Mwc5niTkxGeyIkqkNU38WinxDs6EKjNFovtRfh6nPd253t2mJOFJMmp7XA23lQsKflIunjrNl4JW_J5YV5ASG3Zi8m1Xvf-yf-Qeq6ngEpiLGPVjNtK9TjEZvalbspP5yTACItadW9K2tdjdXzhiP03XH1ADQlPmIY1w9qdReSmrcHbNRo4Zh4nWV78OxR82G_HWlWpYYzlwQ=w3840-h2097?auditContext=forDisplay",
+                        "corsEnabled": true
+                    }
+                ]
+            },
+            {
+                "name": "Lunaar",
+                "icon": "https://lh3.googleusercontent.com/rd-d/ALs6j_Fbo_4aEObn2ADN_Yl9DgZIRO1pDOfsEOj8h3G7GkjWlbEC68HHuyefXx8-Ib5SltfhHDrHlOQ2vF9sWXD-NTiZfUJXD1g4sllhbGOPMGU-d8hYkyphjTxlg8KX45rAyDMwLovknCKPWu66szeS61io8uQYaer4mq6Zso442j8RWIBfcGTH62LZEcGO7uBPOZv8WZGsLKHjVlHbGqb_SPNs5cZzwRo8ay8A3UGYWqJ9_yV-jw_8ZSM3v2QMhLaiLTx6kGpEf20QL2H7IIGgMayMeNy-A6um9pV6zZ1CiBkW9Ya82jz01tD-wTuu-9CQsgR95kcSAJ2O3jLdwtKTSC_1njM5QaK6pz8pNYrzkN_IbuTJsvnmC0yD3K0tSUy_-KKJi-QsTWXGEaqwEya03JaKBsk4DxPuAvWINS0_kfCdIRK9pH5aY0uJn8T5N-swFiyPTdUaPtmw3kEi-waM79zCnXbUZ_WESZ9P0zUUpD3ix3aBWbu_3P_C_wNAW4sGKa3zL9kWl1Rb2VfWHd7geKqNyVb5PFXzHbhlc1Sto3C7cSB8Kzi1Fm_MjzE2WtlYX8vFLRDbMRLoYkncv-e1Ucpz_KcbVzm6GqJRJFtHX8mIDsAq5HffJmSNCE3oxXpdqjafJSkzyEQilzvkXQSllqeYcYJSA-SCHdv3WHaH4ccyfk4IhGLU9ezETPPE_D20hq0nKiBL3w7s0PeO3L1-hZC2lkZnGrEg7IzUWvV1afIrxH7PgRAQmaDlpOL3Zhyfv7wxWnBrkyGNzvUO3hCOxYULS7WksdfP9JtpT47paI0ApHFf5DPnAnZTYeQnBCQ2IEmXyAKEZ5H8iTC26S5CCeLmAf1VR_TPDPjcMczFoNchnlvakCrLfFNx_tKpc9XzUaROVkWjqNXCPONTAbzS9D17zn-nAmChPDNQF4rgbbS3_vrsSZrnZoNttcJrqFimpNT9rUuljdVi-AadHeGIHEQwjLAs0bpJxi9Xg87SwJTvVFC7Dito4OMVjIZnkVPIN9PTVPXuskzEYl1RyQbpjfzQ0NFYtnRnE1EuBFLond4=w3841-h1947?auditContext=forDisplay",
+                "links": [
+                    {
+                        "name": "Lunaar Link #1",
+                        "link": "https://xag.creatyc.com/",
+                        "iconURL": "https://lh3.googleusercontent.com/rd-d/ALs6j_Fbo_4aEObn2ADN_Yl9DgZIRO1pDOfsEOj8h3G7GkjWlbEC68HHuyefXx8-Ib5SltfhHDrHlOQ2vF9sWXD-NTiZfUJXD1g4sllhbGOPMGU-d8hYkyphjTxlg8KX45rAyDMwLovknCKPWu66szeS61io8uQYaer4mq6Zso442j8RWIBfcGTH62LZEcGO7uBPOZv8WZGsLKHjVlHbGqb_SPNs5cZzwRo8ay8A3UGYWqJ9_yV-jw_8ZSM3v2QMhLaiLTx6kGpEf20QL2H7IIGgMayMeNy-A6um9pV6zZ1CiBkW9Ya82jz01tD-wTuu-9CQsgR95kcSAJ2O3jLdwtKTSC_1njM5QaK6pz8pNYrzkN_IbuTJsvnmC0yD3K0tSUy_-KKJi-QsTWXGEaqwEya03JaKBsk4DxPuAvWINS0_kfCdIRK9pH5aY0uJn8T5N-swFiyPTdUaPtmw3kEi-waM79zCnXbUZ_WESZ9P0zUUpD3ix3aBWbu_3P_C_wNAW4sGKa3zL9kWl1Rb2VfWHd7geKqNyVb5PFXzHbhlc1Sto3C7cSB8Kzi1Fm_MjzE2WtlYX8vFLRDbMRLoYkncv-e1Ucpz_KcbVzm6GqJRJFtHX8mIDsAq5HffJmSNCE3oxXpdqjafJSkzyEQilzvkXQSllqeYcYJSA-SCHdv3WHaH4ccyfk4IhGLU9ezETPPE_D20hq0nKiBL3w7s0PeO3L1-hZC2lkZnGrEg7IzUWvV1afIrxH7PgRAQmaDlpOL3Zhyfv7wxWnBrkyGNzvUO3hCOxYULS7WksdfP9JtpT47paI0ApHFf5DPnAnZTYeQnBCQ2IEmXyAKEZ5H8iTC26S5CCeLmAf1VR_TPDPjcMczFoNchnlvakCrLfFNx_tKpc9XzUaROVkWjqNXCPONTAbzS9D17zn-nAmChPDNQF4rgbbS3_vrsSZrnZoNttcJrqFimpNT9rUuljdVi-AadHeGIHEQwjLAs0bpJxi9Xg87SwJTvVFC7Dito4OMVjIZnkVPIN9PTVPXuskzEYl1RyQbpjfzQ0NFYtnRnE1EuBFLond4=w3841-h1947?auditContext=forDisplay"
+                    },
+                    {
+                        "name": "Lunaar Link #2",
+                        "link": "https://cdn.deez.nz/",
+                        "iconURL": "https://lh3.googleusercontent.com/rd-d/ALs6j_Fbo_4aEObn2ADN_Yl9DgZIRO1pDOfsEOj8h3G7GkjWlbEC68HHuyefXx8-Ib5SltfhHDrHlOQ2vF9sWXD-NTiZfUJXD1g4sllhbGOPMGU-d8hYkyphjTxlg8KX45rAyDMwLovknCKPWu66szeS61io8uQYaer4mq6Zso442j8RWIBfcGTH62LZEcGO7uBPOZv8WZGsLKHjVlHbGqb_SPNs5cZzwRo8ay8A3UGYWqJ9_yV-jw_8ZSM3v2QMhLaiLTx6kGpEf20QL2H7IIGgMayMeNy-A6um9pV6zZ1CiBkW9Ya82jz01tD-wTuu-9CQsgR95kcSAJ2O3jLdwtKTSC_1njM5QaK6pz8pNYrzkN_IbuTJsvnmC0yD3K0tSUy_-KKJi-QsTWXGEaqwEya03JaKBsk4DxPuAvWINS0_kfCdIRK9pH5aY0uJn8T5N-swFiyPTdUaPtmw3kEi-waM79zCnXbUZ_WESZ9P0zUUpD3ix3aBWbu_3P_C_wNAW4sGKa3zL9kWl1Rb2VfWHd7geKqNyVb5PFXzHbhlc1Sto3C7cSB8Kzi1Fm_MjzE2WtlYX8vFLRDbMRLoYkncv-e1Ucpz_KcbVzm6GqJRJFtHX8mIDsAq5HffJmSNCE3oxXpdqjafJSkzyEQilzvkXQSllqeYcYJSA-SCHdv3WHaH4ccyfk4IhGLU9ezETPPE_D20hq0nKiBL3w7s0PeO3L1-hZC2lkZnGrEg7IzUWvV1afIrxH7PgRAQmaDlpOL3Zhyfv7wxWnBrkyGNzvUO3hCOxYULS7WksdfP9JtpT47paI0ApHFf5DPnAnZTYeQnBCQ2IEmXyAKEZ5H8iTC26S5CCeLmAf1VR_TPDPjcMczFoNchnlvakCrLfFNx_tKpc9XzUaROVkWjqNXCPONTAbzS9D17zn-nAmChPDNQF4rgbbS3_vrsSZrnZoNttcJrqFimpNT9rUuljdVi-AadHeGIHEQwjLAs0bpJxi9Xg87SwJTvVFC7Dito4OMVjIZnkVPIN9PTVPXuskzEYl1RyQbpjfzQ0NFYtnRnE1EuBFLond4=w3841-h1947?auditContext=forDisplay"
+                    },
+                    {
+                        "name": "Lunaar Link #3",
+                        "link": "https://yga.warga.ai/",
+                        "iconURL": "https://lh3.googleusercontent.com/rd-d/ALs6j_Fbo_4aEObn2ADN_Yl9DgZIRO1pDOfsEOj8h3G7GkjWlbEC68HHuyefXx8-Ib5SltfhHDrHlOQ2vF9sWXD-NTiZfUJXD1g4sllhbGOPMGU-d8hYkyphjTxlg8KX45rAyDMwLovknCKPWu66szeS61io8uQYaer4mq6Zso442j8RWIBfcGTH62LZEcGO7uBPOZv8WZGsLKHjVlHbGqb_SPNs5cZzwRo8ay8A3UGYWqJ9_yV-jw_8ZSM3v2QMhLaiLTx6kGpEf20QL2H7IIGgMayMeNy-A6um9pV6zZ1CiBkW9Ya82jz01tD-wTuu-9CQsgR95kcSAJ2O3jLdwtKTSC_1njM5QaK6pz8pNYrzkN_IbuTJsvnmC0yD3K0tSUy_-KKJi-QsTWXGEaqwEya03JaKBsk4DxPuAvWINS0_kfCdIRK9pH5aY0uJn8T5N-swFiyPTdUaPtmw3kEi-waM79zCnXbUZ_WESZ9P0zUUpD3ix3aBWbu_3P_C_wNAW4sGKa3zL9kWl1Rb2VfWHd7geKqNyVb5PFXzHbhlc1Sto3C7cSB8Kzi1Fm_MjzE2WtlYX8vFLRDbMRLoYkncv-e1Ucpz_KcbVzm6GqJRJFtHX8mIDsAq5HffJmSNCE3oxXpdqjafJSkzyEQilzvkXQSllqeYcYJSA-SCHdv3WHaH4ccyfk4IhGLU9ezETPPE_D20hq0nKiBL3w7s0PeO3L1-hZC2lkZnGrEg7IzUWvV1afIrxH7PgRAQmaDlpOL3Zhyfv7wxWnBrkyGNzvUO3hCOxYULS7WksdfP9JtpT47paI0ApHFf5DPnAnZTYeQnBCQ2IEmXyAKEZ5H8iTC26S5CCeLmAf1VR_TPDPjcMczFoNchnlvakCrLfFNx_tKpc9XzUaROVkWjqNXCPONTAbzS9D17zn-nAmChPDNQF4rgbbS3_vrsSZrnZoNttcJrqFimpNT9rUuljdVi-AadHeGIHEQwjLAs0bpJxi9Xg87SwJTvVFC7Dito4OMVjIZnkVPIN9PTVPXuskzEYl1RyQbpjfzQ0NFYtnRnE1EuBFLond4=w3841-h1947?auditContext=forDisplay"
+                    },
+                    {
+                        "name": "Lunaar Link #4",
+                        "link": "https://xag.creatyc.com/",
+                        "iconURL": "https://lh3.googleusercontent.com/rd-d/ALs6j_Fbo_4aEObn2ADN_Yl9DgZIRO1pDOfsEOj8h3G7GkjWlbEC68HHuyefXx8-Ib5SltfhHDrHlOQ2vF9sWXD-NTiZfUJXD1g4sllhbGOPMGU-d8hYkyphjTxlg8KX45rAyDMwLovknCKPWu66szeS61io8uQYaer4mq6Zso442j8RWIBfcGTH62LZEcGO7uBPOZv8WZGsLKHjVlHbGqb_SPNs5cZzwRo8ay8A3UGYWqJ9_yV-jw_8ZSM3v2QMhLaiLTx6kGpEf20QL2H7IIGgMayMeNy-A6um9pV6zZ1CiBkW9Ya82jz01tD-wTuu-9CQsgR95kcSAJ2O3jLdwtKTSC_1njM5QaK6pz8pNYrzkN_IbuTJsvnmC0yD3K0tSUy_-KKJi-QsTWXGEaqwEya03JaKBsk4DxPuAvWINS0_kfCdIRK9pH5aY0uJn8T5N-swFiyPTdUaPtmw3kEi-waM79zCnXbUZ_WESZ9P0zUUpD3ix3aBWbu_3P_C_wNAW4sGKa3zL9kWl1Rb2VfWHd7geKqNyVb5PFXzHbhlc1Sto3C7cSB8Kzi1Fm_MjzE2WtlYX8vFLRDbMRLoYkncv-e1Ucpz_KcbVzm6GqJRJFtHX8mIDsAq5HffJmSNCE3oxXpdqjafJSkzyEQilzvkXQSllqeYcYJSA-SCHdv3WHaH4ccyfk4IhGLU9ezETPPE_D20hq0nKiBL3w7s0PeO3L1-hZC2lkZnGrEg7IzUWvV1afIrxH7PgRAQmaDlpOL3Zhyfv7wxWnBrkyGNzvUO3hCOxYULS7WksdfP9JtpT47paI0ApHFf5DPnAnZTYeQnBCQ2IEmXyAKEZ5H8iTC26S5CCeLmAf1VR_TPDPjcMczFoNchnlvakCrLfFNx_tKpc9XzUaROVkWjqNXCPONTAbzS9D17zn-nAmChPDNQF4rgbbS3_vrsSZrnZoNttcJrqFimpNT9rUuljdVi-AadHeGIHEQwjLAs0bpJxi9Xg87SwJTvVFC7Dito4OMVjIZnkVPIN9PTVPXuskzEYl1RyQbpjfzQ0NFYtnRnE1EuBFLond4=w3841-h1947?auditContext=forDisplay"
+                    },
+                    {
+                        "name": "Lunaar Link #5",
+                        "link": "https://fjd.2hinformatika.hu/",
+                        "iconURL": "https://lh3.googleusercontent.com/rd-d/ALs6j_Fbo_4aEObn2ADN_Yl9DgZIRO1pDOfsEOj8h3G7GkjWlbEC68HHuyefXx8-Ib5SltfhHDrHlOQ2vF9sWXD-NTiZfUJXD1g4sllhbGOPMGU-d8hYkyphjTxlg8KX45rAyDMwLovknCKPWu66szeS61io8uQYaer4mq6Zso442j8RWIBfcGTH62LZEcGO7uBPOZv8WZGsLKHjVlHbGqb_SPNs5cZzwRo8ay8A3UGYWqJ9_yV-jw_8ZSM3v2QMhLaiLTx6kGpEf20QL2H7IIGgMayMeNy-A6um9pV6zZ1CiBkW9Ya82jz01tD-wTuu-9CQsgR95kcSAJ2O3jLdwtKTSC_1njM5QaK6pz8pNYrzkN_IbuTJsvnmC0yD3K0tSUy_-KKJi-QsTWXGEaqwEya03JaKBsk4DxPuAvWINS0_kfCdIRK9pH5aY0uJn8T5N-swFiyPTdUaPtmw3kEi-waM79zCnXbUZ_WESZ9P0zUUpD3ix3aBWbu_3P_C_wNAW4sGKa3zL9kWl1Rb2VfWHd7geKqNyVb5PFXzHbhlc1Sto3C7cSB8Kzi1Fm_MjzE2WtlYX8vFLRDbMRLoYkncv-e1Ucpz_KcbVzm6GqJRJFtHX8mIDsAq5HffJmSNCE3oxXpdqjafJSkzyEQilzvkXQSllqeYcYJSA-SCHdv3WHaH4ccyfk4IhGLU9ezETPPE_D20hq0nKiBL3w7s0PeO3L1-hZC2lkZnGrEg7IzUWvV1afIrxH7PgRAQmaDlpOL3Zhyfv7wxWnBrkyGNzvUO3hCOxYULS7WksdfP9JtpT47paI0ApHFf5DPnAnZTYeQnBCQ2IEmXyAKEZ5H8iTC26S5CCeLmAf1VR_TPDPjcMczFoNchnlvakCrLfFNx_tKpc9XzUaROVkWjqNXCPONTAbzS9D17zn-nAmChPDNQF4rgbbS3_vrsSZrnZoNttcJrqFimpNT9rUuljdVi-AadHeGIHEQwjLAs0bpJxi9Xg87SwJTvVFC7Dito4OMVjIZnkVPIN9PTVPXuskzEYl1RyQbpjfzQ0NFYtnRnE1EuBFLond4=w3841-h1947?auditContext=forDisplay"
+                    }
+                ]
+            },
+            {
+                "name": "Vapor",
+                "icon": "https://dontvape.clicksoftware.co.uk/asset/logo-icon.png",
+                "links": [
+                    {
+                        "name": "Vapor Link #1",
+                        "link": "https://dontvape.clicksoftware.co.uk/",
+                        "iconURL": "https://dontvape.clicksoftware.co.uk/asset/logo-icon.png"
+                    },
+                    {
+                        "name": "Vapor Link #2",
+                        "link": "https://robotictoi.lat/",
+                        "iconURL": "https://robotictoi.lat/asset/logo-icon.png"
+                    },
+                    {
+                        "name": "Vapor Link #3",
+                        "link": "https://vaperisveryeducational.dinprima.ro/",
+                        "iconURL": "https://vaperisveryeducational.dinprima.ro/asset/logo-icon.png"
+                    },
+                    {
+                        "name": "Vapor Link #4",
+                        "link": "https://wow.education.cellophaneslinger.net/",
+                        "iconURL": "https://wow.education.cellophaneslinger.net/asset/logo-icon.png"
+                    },
+                    {
+                        "name": "Vapor Link #5",
+                        "link": "https://welcome-to-learning.fredrikkivi.se/",
+                        "iconURL": "https://welcome-to-learning.fredrikkivi.se/asset/logo-icon.png"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "Games",
+        "icon": "https://cdn-icons-png.flaticon.com/512/3523/3523063.png",
+        "enabled": false,
+        "categories": []
+    }
+];
+
+var sectionGrid = document.getElementById("sectionGrid");
+sections.forEach(function(sec) {
+    var btn = document.createElement("div");
+    btn.className = "section-btn";
+    btn.innerHTML = '<img src="' + sec.icon + '">' + sec.name;
+    if (!sec.enabled) {
+        btn.classList.add("disabled");
+        btn.title = "Under Maintenance";
+    } else {
+        btn.onclick = function() { showCategories(sec); };
+    }
+    sectionGrid.appendChild(btn);
+});
+
+function showCategories(sec) {
+    document.getElementById("mainPage").style.display = "none";
+    var categoryPage = document.getElementById("categoryPage");
+    categoryPage.style.display = "block";
+    categoryPage.classList.add("page-enter");
+    document.getElementById("categoryTitle").textContent = sec.name;
+    var catGrid = document.getElementById("categoryGrid");
+    catGrid.innerHTML = "";
+    sec.categories.forEach(function(cat) {
+        var btn = document.createElement("div");
+        btn.className = "category-btn";
+        btn.innerHTML = '<img src="' + cat.icon + '"> ' + cat.name;
+        btn.onclick = function() { showLinks(cat); };
+        catGrid.appendChild(btn);
+    });
+}
+
+function showLinks(cat) {
+    document.getElementById("categoryPage").style.display = "none";
+    var linksPage = document.getElementById("linksPage");
+    linksPage.style.display = "block";
+    linksPage.classList.add("page-enter");
+    document.getElementById("linksTitle").textContent = cat.name;
+    var linkGrid = document.getElementById("linkGrid");
+    linkGrid.innerHTML = "";
+    
+    cat.links.forEach(function(info) {
+        var card = document.createElement("div");
+        card.className = "card";
+        
+        var buttonsHTML;
+        if (info.corsEnabled) {
+            buttonsHTML = '<button class="btn newtab">🌐 Open in New Tab</button>';
+        } else {
+            buttonsHTML = '<button class="btn embed">🚀 Launch Embed</button>' +
+                         '<button class="btn cloak">🎭 Launch Cloaked</button>';
+        }
+        
+        card.innerHTML = '<div class="name"><img src="' + info.iconURL + '" class="icon-img">' + info.name + '</div>' +
+            '<div class="url">' + info.link + '</div>' +
+            '<div class="controls">' + buttonsHTML + '</div>';
+        linkGrid.appendChild(card);
+
+        if (info.corsEnabled) {
+            card.querySelector(".newtab").onclick = function() {
+                window.open(info.link, '_blank');
+            };
+        } else {
+            card.querySelector(".embed").onclick = function() {
+                document.getElementById("viewer").src = info.link;
+                document.getElementById("overlay").style.display = "block";
+            };
+            
+            card.querySelector(".cloak").onclick = function() {
+                var w = window.open("about:blank");
+                w.document.write('<html><head><title>New Tab</title></head><body style="margin:0;padding:0;"><iframe src="' + info.link + '" style="width:100%;height:100%;border:0;"></iframe></body></html>');
+            };
+        }
+    });
+}
+
+document.getElementById("backToSection").onclick = function() {
+    document.getElementById("categoryPage").style.display = "none";
+    document.getElementById("mainPage").style.display = "block";
+};
+
+document.getElementById("backToCategory").onclick = function() {
+    document.getElementById("linksPage").style.display = "none";
+    document.getElementById("categoryPage").style.display = "block";
+};
+
+document.getElementById("closeBtn").onclick = function() {
+    document.getElementById("overlay").style.display = "none";
+    document.getElementById("viewer").src = "";
+};
+</script>
+</body>
+</html>
